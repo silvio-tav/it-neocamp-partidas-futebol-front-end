@@ -1,1 +1,29 @@
 node_modules/
+
+# Build
+dist/
+build/
+
+# Env local/secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Test/coverage
+coverage/
+
+# Cache
+.eslintcache
+.vite/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
