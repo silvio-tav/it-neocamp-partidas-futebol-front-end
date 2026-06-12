@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { AppHeader } from './components/layout/AppHeader'
+import { LoginPage } from './components/layout/LoginPage'
 import { Notice } from './components/layout/Notice'
 import { SummaryMetrics } from './components/layout/SummaryMetrics'
 import { TabNavigation } from './components/layout/TabNavigation'
@@ -11,10 +12,26 @@ import { RankingTab } from './components/tabs/RankingTab'
 import { RetrospectoTab } from './components/tabs/RetrospectoTab'
 import { clubeInicial, estadioInicial, partidaInicial } from './constants/forms'
 import { request } from './services/api'
+import { isAuthenticated, removeToken } from './services/auth'
 import { buildQuery, compactPayload, getErrorMessage, pageContent } from './utils/apiHelpers'
 import { toInputDateTime } from './utils/formatters'
 
 function App() {
+  const [authenticated, setAuthenticated] = useState(isAuthenticated)
+
+  useEffect(() => {
+    function handleLogout() {
+      setAuthenticated(false)
+    }
+    window.addEventListener('auth:logout', handleLogout)
+    return () => window.removeEventListener('auth:logout', handleLogout)
+  }, [])
+
+  function handleLogout() {
+    removeToken()
+    setAuthenticated(false)
+  }
+
   const [activeTab, setActiveTab] = useState('partidas')
   const [clubes, setClubes] = useState([])
   const [estadios, setEstadios] = useState([])
@@ -302,6 +319,10 @@ function App() {
     runAction(() => loadConfronto(filters), 'Confronto carregado.')
   }
 
+  if (!authenticated) {
+    return <LoginPage onLogin={() => setAuthenticated(true)} />
+  }
+
   function renderActiveTab() {
     switch (activeTab) {
       case 'partidas':
@@ -387,7 +408,7 @@ function App() {
 
   return (
     <main className="app-shell">
-      <AppHeader loading={loading} message={message} onRefresh={refreshAll} />
+      <AppHeader loading={loading} message={message} onRefresh={refreshAll} onLogout={handleLogout} />
       <SummaryMetrics
         ativos={ativos}
         estadiosCount={estadios.length}

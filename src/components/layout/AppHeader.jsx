@@ -1,4 +1,4 @@
-export function AppHeader({ loading, message, onRefresh }) {
+export function AppHeader({ loading, message, onRefresh, onLogout }) {
   return (
     <header className="topbar">
       <div>
@@ -12,6 +12,9 @@ export function AppHeader({ loading, message, onRefresh }) {
         </span>
         <button type="button" className="button secondary" onClick={onRefresh} disabled={loading}>
           {loading ? 'Carregando' : 'Atualizar'}
+        </button>
+        <button type="button" className="button secondary" onClick={onLogout}>
+          Sair
         </button>
       </div>
     </header>
