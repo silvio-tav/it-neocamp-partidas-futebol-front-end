@@ -1,4 +1,5 @@
 import { getToken, removeToken } from './auth'
+import { extractErrorMessage } from '../utils/apiHelpers'
 
 const API_BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
 
@@ -24,11 +25,10 @@ export async function request(path, options = {}) {
   if (response.status === 204) return null
 
   const contentType = response.headers.get('content-type') || ''
-  const data = contentType.includes('application/json') ? await response.json() : await response.text()
+  const data = contentType.includes('json') ? await response.json() : await response.text()
 
   if (!response.ok) {
-    const detail = data?.detail || data?.message || data?.title || data
-    throw new Error(detail || `Erro HTTP ${response.status}`)
+    throw new Error(extractErrorMessage(data, response.status))
   }
 
   return data
@@ -44,8 +44,7 @@ export async function authRequest(path, body) {
   const data = await response.json()
 
   if (!response.ok) {
-    const detail = data?.detail || data?.message || data?.title || data
-    throw new Error(detail || `Erro HTTP ${response.status}`)
+    throw new Error(extractErrorMessage(data, response.status))
   }
 
   return data

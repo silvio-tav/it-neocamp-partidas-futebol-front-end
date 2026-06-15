@@ -22,6 +22,12 @@ export function buildQuery(params) {
   return query ? `?${query}` : ''
 }
 
-export function getErrorMessage(error) {
-  return error instanceof Error ? error.message : 'Não foi possível concluir a ação.'
+export function extractErrorMessage(data, status) {
+  const fieldErrors = data?.errors || data?.fieldErrors
+  if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
+    return fieldErrors.map((e) => `${e.field}: ${e.defaultMessage || e.message}`).join('; ')
+  }
+  const detail = data?.detail || data?.message || data?.title
+  if (typeof detail === 'string') return detail
+  return `Erro HTTP ${status}`
 }

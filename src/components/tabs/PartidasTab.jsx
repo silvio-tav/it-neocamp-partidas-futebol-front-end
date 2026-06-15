@@ -85,6 +85,7 @@ export function PartidasTab({
             <input
               type="datetime-local"
               value={partidaForm.dataHoraPartida}
+              max={new Date().toISOString().slice(0, 16)}
               onChange={(event) => setPartidaForm({ ...partidaForm, dataHoraPartida: event.target.value })}
               required
             />

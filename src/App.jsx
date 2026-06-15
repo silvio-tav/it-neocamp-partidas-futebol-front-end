@@ -13,7 +13,7 @@ import { RetrospectoTab } from './components/tabs/RetrospectoTab'
 import { clubeInicial, estadioInicial, partidaInicial } from './constants/forms'
 import { request } from './services/api'
 import { isAuthenticated, removeToken } from './services/auth'
-import { buildQuery, compactPayload, getErrorMessage, pageContent } from './utils/apiHelpers'
+import { buildQuery, compactPayload, pageContent } from './utils/apiHelpers'
 import { toInputDateTime } from './utils/formatters'
 
 function App() {
@@ -29,6 +29,7 @@ function App() {
 
   function handleLogout() {
     removeToken()
+    setMessage(null)
     setAuthenticated(false)
   }
 
@@ -130,21 +131,23 @@ function App() {
       await Promise.all([loadClubes(), loadEstadios(), loadPartidas(), loadRanking()])
       setMessage({ type: 'success', text: 'Dados atualizados.' })
     } catch (error) {
-      setMessage({ type: 'error', text: getErrorMessage(error) })
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Não foi possível concluir a ação.' })
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
+    if (!authenticated) return
+
     const timeoutId = window.setTimeout(() => {
       refreshAll()
     }, 0)
 
     return () => window.clearTimeout(timeoutId)
-    // Carga inicial da API; filtros e ações recarregam os dados explicitamente.
+    // Carga inicial autenticada; filtros e ações recarregam os dados explicitamente.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [authenticated])
 
   async function runAction(action, successMessage, afterAction) {
     setLoading(true)
@@ -154,7 +157,7 @@ function App() {
       if (afterAction) await afterAction()
       setMessage({ type: 'success', text: successMessage })
     } catch (error) {
-      setMessage({ type: 'error', text: getErrorMessage(error) })
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Não foi possível concluir a ação.' })
     } finally {
       setLoading(false)
     }
@@ -320,7 +323,7 @@ function App() {
   }
 
   if (!authenticated) {
-    return <LoginPage onLogin={() => setAuthenticated(true)} />
+    return <LoginPage onLogin={() => { setMessage(null); setAuthenticated(true) }} />
   }
 
   function renderActiveTab() {
